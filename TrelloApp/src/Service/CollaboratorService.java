@@ -1,0 +1,23 @@
+package Service;
+
+import Model.User;
+import Model.Lists;
+import Model.Card;
+
+import javax.ejb.Stateless;
+
+@Stateless
+public class CollaboratorService {
+
+	  public void moveCard(User collaborator, Lists currentList, Lists newList) {
+	        // Implementation
+	    }
+
+	    public void assignCard(User collaborator, Card card, User assignee) {
+	        // Implementation
+	    }
+
+	    public void addComment(User collaborator, Card card, String comment) {
+	        // Implementation
+	    }
+}
