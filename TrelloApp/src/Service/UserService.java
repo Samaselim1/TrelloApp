@@ -5,6 +5,7 @@ import Model.User;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 @Stateless
 public class UserService {
@@ -13,20 +14,30 @@ public class UserService {
     private EntityManager entityManager;
 	
 	   public void registerUser(User user) {
-	         if (getUserByUsername(user.getUsername()) != null) {
+	         if (getUserByUsername(user.getName()) != null) {
             throw new RuntimeException("User already exists");
         }
-        entitManager.persist(user);
+        entityManager.persist(user);
 	    }
 
-	    public User loginUser(String email, String password) {
-	        // Implementation
-	        return null;
+	   public boolean login(User credentials) {
+	        User user = getUserByUsername(credentials.getName());
+	        // Check if user exists and password matches
+	        return user != null && user.getPassword().equals(credentials.getPassword());
 	    }
 
-	    public void updateProfile(User user) {
-	        // Implementation
-	    }
+	   public void update(User user) {
+           User existingUser = getUserByUsername(user.getName());
+   // Check if user exists
+   if (existingUser == null) {
+       throw new RuntimeException("User does not exist");
+   }
+   // Update user information
+   existingUser.setName(user.getName());
+   existingUser.setEmail(user.getEmail());
+   existingUser.setPassword(user.getPassword());
+}
+
 	private User getUserByUsername(String username) {
         Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username");
         query.setParameter("username", username);
