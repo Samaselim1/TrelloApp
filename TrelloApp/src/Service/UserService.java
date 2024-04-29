@@ -27,12 +27,13 @@ public class UserService {
 	    public void updateProfile(User user) {
 	        // Implementation
 	    }
-	 private User getUserByUsername(String username) {
-        for (User user : users) {
-            if (user.getUsername().equals(username)) {
-                return user;
-            }
+	private User getUserByUsername(String username) {
+        Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username");
+        query.setParameter("username", username);
+        try {
+            return (User) query.getSingleResult();
+        } catch (Exception e) {
+            return null;
         }
-        return null;
     }
 }
