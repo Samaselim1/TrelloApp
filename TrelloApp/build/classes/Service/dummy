@@ -1,0 +1,48 @@
+package userPack;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.ejb.EJB;
+
+import ejb.User;
+public class UserService {
+    @EJB
+    User user;
+  ->>  private List<User> users = new ArrayList<>();
+    
+    public void register(User u) {
+        // Check if user already exists
+        if (getUserByUsername(u.getUsername()) != null) {
+            throw new RuntimeException("User already exists");
+        }
+        // Add user to the list
+        users.add(u);
+    }
+    
+    public boolean login(User credentials) {
+        User user1 = getUserByUsername(credentials.getUsername());
+        // Check if user exists and password matches
+        return user1 != null && user1.getPassword().equals(credentials.getPassword());
+    }
+    
+    public void update(User user) {
+                User existingUser = getUserByUsername(user.getUsername());
+        // Check if user exists
+        if (existingUser == null) {
+            throw new RuntimeException("User does not exist");
+        }
+        // Update user information
+        existingUser.setUsername(user.getUsername());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setPassword(user.getPassword());
+    }
+    
+    private User getUserByUsername(String username) {
+        for (User user : users) {
+            if (user.getUsername().equals(username)) {
+                return user;
+            }
+        }
+        return null;
+    }
+}
