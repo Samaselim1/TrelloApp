@@ -9,11 +9,14 @@ import javax.persistence.PersistenceContext;
 @Stateless
 public class UserService {
 	
-	@PersistenceContext
+	@PersistenceContext(unitName="TrelloPU")
     private EntityManager entityManager;
 	
-	   public void registerUser(String email, String password) {
-	        // Implementation
+	   public void registerUser(User user) {
+	         if (getUserByUsername(user.getUsername()) != null) {
+            throw new RuntimeException("User already exists");
+        }
+        entitManager.persist(user);
 	    }
 
 	    public User loginUser(String email, String password) {
@@ -24,4 +27,12 @@ public class UserService {
 	    public void updateProfile(User user) {
 	        // Implementation
 	    }
+	 private User getUserByUsername(String username) {
+        for (User user : users) {
+            if (user.getUsername().equals(username)) {
+                return user;
+            }
+        }
+        return null;
+    }
 }
