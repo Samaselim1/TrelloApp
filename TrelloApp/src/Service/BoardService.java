@@ -6,24 +6,38 @@ import Model.Board;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.util.List;
 
 @Stateless
 public class BoardService {
 	
-	@PersistenceContext
+	@PersistenceContext(unitName="TrelloPU")
     private EntityManager entityManager;
 	
 	public Board createBoard(User user, String boardName) {
         Board board = new Board(boardName);
-        // Implementation
+        board.setOwner(user); 
+        entityManager.persist(board); 
         return board;
     }
 
     public void inviteUser(User user, Board board) {
-        // Implementation
+        board.getCollaborators().add(user); 
+        entityManager.merge(board); // Update the board entity
     }
 
     public void deleteBoard(User user, Board board) {
-        // Implementation
+        if (user.equals(board.getOwner())) { // Check if the user is the owner of the board
+            entityManager.remove(board); // Remove the board entity
+        } else {
+            throw new RuntimeException("User does not have permission to delete the board");
+        }
+    }
+
+    public List<Board> getAllBoards(User user) {
+        Query query = entityManager.createQuery("SELECT b FROM Board b WHERE b.owner = :user OR :user MEMBER OF b.collaborators");
+        query.setParameter("user", user);
+        return query.getResultList();
     }
 }
