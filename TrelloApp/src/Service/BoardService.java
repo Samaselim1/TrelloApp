@@ -24,12 +24,12 @@ public class BoardService {
 
     public void inviteUser(User user, Board board) {
         board.getCollaborators().add(user); 
-        entityManager.merge(board); // Update the board entity
+        entityManager.merge(board); 
     }
 
     public void deleteBoard(User user, Board board) {
-        if (user.equals(board.getOwner())) { // Check if the user is the owner of the board
-            entityManager.remove(board); // Remove the board entity
+        if (user.equals(board.getOwner())) {
+            entityManager.remove(board); 
         } else {
             throw new RuntimeException("User does not have permission to delete the board");
         }
