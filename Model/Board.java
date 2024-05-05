@@ -21,8 +21,9 @@ public class Board {
     private Long id;
 	
     private String boardName;
+    
     @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "userid")
     private User owner;
 
     @ManyToMany
@@ -40,13 +41,9 @@ public class Board {
        this. boardName = name;
         this.owner = owner;
         this.collaborators = new ArrayList<>();
-    }
-   
-
-    public Board(String name) {
-        this.boardName = name;
         this.lists = new ArrayList<>();
     }
+   
     
     public Long getId() {
         return id;
@@ -65,10 +62,10 @@ public class Board {
 		boardName = boardname;
 	}
 	
-	/*public void addList(Board list) {
+	public void addList(Lists list) {
       lists.add(list);
     }
-	*/
+	
 	 public User getOwner() {
 	        return owner;
 	    }

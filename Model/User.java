@@ -15,7 +15,7 @@ public class User {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userid;
 	
 	 private String username;
 	 private String password;
@@ -29,21 +29,22 @@ public class User {
 	    private List<Board> ownedBoards= new ArrayList<>();
 	 
 	 public User( ) {};
-	 public User(String email, String password, String name) {
+	 public User(String email, String password, String name , String role) {
 	        this.email = email;
 	        this.password = password;
 	        this.username = name;
+	        this.role = role;
 
 	    }
 	
 	 public void setId(Long id)
 	 {
-		 this.id = id;
+		 this.userid = id;
 	 }
 	 
 	 public Long getId()
 	 {
-		 return id;
+		 return userid;
 	 }
 	 
 	 public String getUsername() {
