@@ -1,43 +1,57 @@
 package Service;
 
-import Model.User;
-import Model.Board;
-
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import java.util.List;
 
-@Stateless
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import Controller.BoardController;
+import Model.Board;
+import Model.User;
+
+
+@Path("/boards")
 public class BoardService {
-	
-	@PersistenceContext(unitName="TrelloPU")
-    private EntityManager entityManager;
-	
-	public Board createBoard(User user, String boardName) {
-        Board board = new Board(boardName);
-        board.setOwner(user); 
-        entityManager.persist(board); 
-        return board;
+
+
+    @Inject
+    private BoardController boardcontroller;
+
+    @POST
+    @Path("/create")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createBoard(User user, String boardName) {
+        return boardcontroller.createBoard(user, boardName);
     }
 
-    public void inviteUser(User user, Board board) {
-        board.getCollaborators().add(user); 
-        entityManager.merge(board); 
+    @POST
+    @Path("/invite")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response inviteUser(User user, Board board) {
+    	boardcontroller.inviteUser(user, board);
+        return Response.ok().build();
     }
 
-    public void deleteBoard(User user, Board board) {
-        if (user.equals(board.getOwner())) {
-            entityManager.remove(board); 
-        } else {
-            throw new RuntimeException("User does not have permission to delete the board");
-        }
+    @DELETE
+    @Path("/delete")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response deleteBoard(User user, Board board) {
+        return boardcontroller.deleteBoard(user, board);
     }
 
-    public List<Board> getAllBoards(User user) {
-        Query query = entityManager.createQuery("SELECT b FROM Board b WHERE b.owner = :user OR :user MEMBER OF b.collaborators");
-        query.setParameter("user", user);
-        return query.getResultList();
+    @GET
+    @Path("/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllBoards(User user) {
+        List<Board> boards = boardcontroller.getAllBoards(user);
+        return Response.ok().entity(boards).build();
     }
 }
