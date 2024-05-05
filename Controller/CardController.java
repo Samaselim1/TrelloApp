@@ -1,51 +1,61 @@
 package Controller;
 
-import                  Model.User;
+import Model.User;
+
+import java.util.List;
+
+import Model.Board;
 import Model.Card;
 import Model.Lists;
-import Service.CardService;
 
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
-@Path("/cards")
+@Stateless
 public class CardController {
-
-    @Inject
-    private CardService cardService;
-
-    @POST
-    @Path("/create")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createCard(User user, Lists list, String cardDescription) {
-        Card card = cardService.createCard(user, list, cardDescription);
-        return Response.ok().entity(card).build();
+	
+    @PersistenceContext(unitName = "TrelloPU")
+    private EntityManager entityManager;
+	
+    public Card createCard(User user, Lists list, String cardDescription) {
+        if (list.getCollaborators().contains(user)) {
+            Card card = new Card(cardDescription);
+            list.addCard(card);
+            entityManager.persist(card);
+            return card;
+        } else {
+            throw new RuntimeException("User does not have permission to create a card in this list.");
+        }
     }
 
-    @PUT
-    @Path("/move")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response moveCard(User user, Card card, Lists newList) {
-        cardService.moveCard(user, card, newList);
-        return Response.ok().build();
+    public void moveCard(User user, Card card, Lists newList) {
+        if (card.getList().getCollaborators().contains(user)) {
+            Lists currentList = card.getList();
+            currentList.removeCard(card);
+            newList.addCard(card);
+            card.setList(newList);
+            entityManager.merge(card);
+        } else {
+            throw new RuntimeException("User does not have permission to move the card.");
+        }
     }
 
-    @PUT
-    @Path("/assign")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response assignCard(User user, Card card, User assignee) {
-        cardService.assignCard(user, card, assignee);
-        return Response.ok().build();
+    public void assignCard(User user, Card card, User assignee) {
+        if (card.getList().getCollaborators().contains(user)) {
+            card.setOwner(assignee);
+            entityManager.merge(card);
+        } else {
+            throw new RuntimeException("User does not have permission to assign the card.");
+        }
     }
-
-    /* public Response addComment(User user, Card card, String comment) {
-    @PUT
-    @Path("/comment")
-    @Consumes(MediaType.APPLICATION_JSON)
-        cardService.addComment(user, card, comment);
-        return Response.ok().build();
+    
+   /* public void addComment(User user, Card card, String comment) {
+        if (card.getList().getCollaborators().contains(user)) {
+            card.addComment(comment);
+            entityManager.merge(card);
+        } else {
+            throw new RuntimeException("User does not have permission to add a comment to the card.");
+        }
     }*/
 }
