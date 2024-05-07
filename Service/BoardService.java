@@ -24,14 +24,13 @@ public class BoardService {
     @Inject
     private BoardController boardcontroller;
 
-    @POST
-    @Path("/create")
+@POST
+    @Path("/create/{boardName}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createBoard(User user, String boardName) {
+    public Response createBoard(User user, @PathParam("boardName")String boardName) {
         return boardcontroller.createBoard(user, boardName);
     }
-
     @POST
     @Path("/invite")
     @Consumes(MediaType.APPLICATION_JSON)
