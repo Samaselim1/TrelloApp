@@ -17,22 +17,26 @@ public class BoardController {
 	@PersistenceContext(unitName="TrelloPU")
     private EntityManager entityManager;
 	
-//	public Response createBoard(User user, String boardName) {
-//        Board board = new Board(boardName , user);
-//        entityManager.persist(board); 
-//        return Response.ok("Board created successfully").build();
-//    }
-	
-	public Response createBoard(User user, String boardName) 
+public Response createBoard(User user, @PathParam("boardName")String boardName) 
 	{
-	    if (!user.getRole().equals("Team Leader")) {
-	        return Response.status(Response.Status.FORBIDDEN).entity("Only team leaders can create boards").build();
-	    }
-	    Board board = new Board(boardName, user);
-	    entityManager.persist(board);
-	    return Response.status(Response.Status.CREATED).entity("Board created successfully").build();
-	}
+		User owner = usercontroller.getUserByUsername(user.getUsername());
+		if (owner == null) {
+	    		 return Response.status(Response.Status.NOT_FOUND).entity("User does not existtttt.").build();
+	    } 
+		if (boardName == null || boardName.trim().isEmpty()) {
+		    return Response.status(Response.Status.BAD_REQUEST).entity("Board name is required.").build();
+		}
 
+		else if (!owner.getRole().equals("Team Leader")) {
+	        return Response.status(Response.Status.FORBIDDEN).entity("Only team leaders can create boards").build();
+	    } else {
+	    	Board board = new Board(boardName, owner);
+	    	board.setOwner(owner);
+	    	owner.getOwnedBoards().add(board); 
+	    	entityManager.persist(board);
+	    	return Response.status(Response.Status.CREATED).entity("Board created successfully").build();
+	    }
+	}
     public void inviteUser(User user, Board board) {
         board.getCollaborators().add(user); 
         entityManager.merge(board); 
