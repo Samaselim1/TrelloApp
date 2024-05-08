@@ -43,21 +43,16 @@ public class ListService {
         }
     }
 
-    @DELETE
-    @Path("/delete/{listId}")
-    public Response deleteList(User user, @PathParam("listId") Long listId) {
+@DELETE
+    @Path("/delete/{listName}/{user}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteList(@PathParam("listName") String Listname, @PathParam("user") String user) {
         try {
-            Lists list = entityManager.find(Lists.class, listId);
-            if (list == null) {
-                return Response.status(Response.Status.NOT_FOUND).entity("List not found").build();
-            }
-            listcontroller.deleteList(user, list);
-            return Response.status(Response.Status.OK).entity("List deleted successfully").build();
+            return listcontroller.deleteList(Listname, user);
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Failed to delete list").build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Failed to delete list: " + e.getMessage()).build();
         }
     }
-    
 
         @GET
         @Path("/all/{boardId}")
