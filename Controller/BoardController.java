@@ -3,12 +3,18 @@ package Controller;
 import Model.User;
 import Model.Board;
 
+
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.ws.rs.PathParam;
+
 import javax.ws.rs.core.Response;
 
+import java.util.Collections;
 import java.util.List;
 
 @Stateless
@@ -17,7 +23,12 @@ public class BoardController {
 	@PersistenceContext(unitName="TrelloPU")
     private EntityManager entityManager;
 	
-public Response createBoard(User user, @PathParam("boardName")String boardName) 
+	@Inject
+	private UserController usercontroller;
+	
+
+	
+	public Response createBoard(User user, @PathParam("boardName")String boardName) 
 	{
 		User owner = usercontroller.getUserByUsername(user.getUsername());
 		if (owner == null) {
@@ -37,7 +48,10 @@ public Response createBoard(User user, @PathParam("boardName")String boardName)
 	    	return Response.status(Response.Status.CREATED).entity("Board created successfully").build();
 	    }
 	}
-  public Response inviteUser(@PathParam("username")String user,@PathParam("boardName")String boardName, @PathParam("username2")String invitee) {
+	
+
+
+    public Response inviteUser(@PathParam("username")String user,@PathParam("boardName")String boardName, @PathParam("username2")String invitee) {
 	    User inviter = usercontroller.getUserByUsername(user);
 	    if (inviter == null) {
 	        return Response.status(Response.Status.NOT_FOUND).entity("Inviter does not exist.").build();
@@ -67,18 +81,49 @@ public Response createBoard(User user, @PathParam("boardName")String boardName)
 	    return Response.ok("User invited successfully.").build();
 	}
 
-    public Response deleteBoard(User user, Board board) {
-        if (user.equals(board.getOwner())) {
-            entityManager.remove(board);
-            return Response.ok("Board deleted successfully").build();
-        } else {
-            return Response.status(Response.Status.UNAUTHORIZED).entity("User does not have permission to delete the board").build();
+    public Response deleteBoard(User user, @PathParam("boardName") String boardName) {
+        User owner = usercontroller.getUserByUsername(user.getUsername());
+        if (owner == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity("User does not exist.").build();
         }
+
+        if (boardName == null || boardName.trim().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Board name is required.").build();
+        }
+
+        Board board = getBoardByName(boardName);
+        if (board == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Board does not exist.").build();
+        }
+
+   
+        if (!board.getOwner().equals(owner) || !"Team Leader".equals(owner.getRole())) {
+            return Response.status(Response.Status.FORBIDDEN).entity("Only the board owner who is a Team Leader can delete the board.").build();
+        }
+        entityManager.remove(board);
+        return Response.ok("Board '" + boardName + "' deleted successfully.").build();
     }
 
-    public List<Board> getAllBoards(User user) {
-        Query query = entityManager.createQuery("SELECT b FROM Board b WHERE b.owner = :user OR :user MEMBER OF b.collaborators");
+    public List<Board> getAllBoards(@PathParam("username")String username) {
+        User user = usercontroller.getUserByUsername(username);
+        if (user == null) 
+        {
+            return Collections.emptyList();
+        }
+        Query query = entityManager.createQuery("SELECT b FROM Board b WHERE b.owner = :user ", Board.class);
         query.setParameter("user", user);
         return query.getResultList();
+    }
+    
+    
+    
+    public Board getBoardByName(String boardName) {
+        try {
+            Query query = entityManager.createQuery("SELECT b FROM Board b WHERE b.boardName = :boardName");
+            query.setParameter("boardName", boardName);
+            return (Board) query.getSingleResult();
+        } catch (NoResultException e) {
+            return null; 
+        }
     }
 }
