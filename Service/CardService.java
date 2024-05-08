@@ -65,5 +65,12 @@ public class CardService {
 	    {
 	    	return cardcontroller.getCard(cardId);
 	    }
-
+	    @PUT
+	    @Path("/update/{cardId}")
+	    @Consumes(MediaType.APPLICATION_JSON)
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public Response updateCard(@PathParam("cardId") Long cardId, String requestBody)
+	                               {
+	        return cardcontroller.updateCard( cardId, requestBody);
+	    }
 }
