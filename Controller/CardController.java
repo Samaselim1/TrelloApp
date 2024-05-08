@@ -14,6 +14,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.json.stream.JsonParsingException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -174,7 +175,40 @@ public class CardController {
         return Response.status(Response.Status.OK).entity("Comment and description added successfully.").build();
     }
    
-    
+    public Response updateCard(@PathParam("cardId") Long cardId, String requestBody) {
+        if (cardId == null) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Card ID cannot be null.").build();
+        }
+
+        Card card = entityManager.find(Card.class, cardId);
+        if (card == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Card not found.").build();
+        }
+
+        JsonObject jsonObject;
+        try (JsonReader reader = Json.createReader(new StringReader(requestBody))) {
+            jsonObject = reader.readObject();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid JSON format.").build();
+        }
+
+        String updatedDescription = jsonObject.getString("updatedDescription", "");
+        String updatedComment = jsonObject.getString("updatedComment", "");
+
+        if (!updatedComment.isEmpty()) {
+            card.addComment(updatedComment); 
+        }
+
+        if (!updatedDescription.isEmpty()) {
+            card.setDescription(updatedDescription);
+        }
+
+        entityManager.merge(card);
+        entityManager.flush();  
+
+        return Response.status(Response.Status.OK).entity("Card updated successfully.").build();
+    }
+
     public Response getCard(@PathParam("cardId") Long cardId) {
         Card card = entityManager.find(Card.class, cardId);
         if (card == null) {
