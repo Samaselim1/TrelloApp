@@ -54,16 +54,4 @@ public class ListService {
         }
     }
 
-        @GET
-        @Path("/all/{boardId}")
-        @Produces(MediaType.APPLICATION_JSON)
-        public Response getAllLists(@PathParam("boardId") Long boardId) {
-            Board board = entityManager.find(Board.class, boardId);
-            if (board == null) {
-                return Response.status(Response.Status.NOT_FOUND).entity("Board not found").build();
-            }
-            List<Lists> lists = listcontroller.getAllLists(board);
-            return Response.ok().entity(lists).build();
-        }
-
 }
