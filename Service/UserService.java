@@ -40,5 +40,5 @@ public class UserService {
     public Response updateUser(User user) {
         return usercontroller.update(user);
     }
+    
 }
-
