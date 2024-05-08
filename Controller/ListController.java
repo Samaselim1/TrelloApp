@@ -27,7 +27,6 @@ public class ListController {
 		    if (boardn == null) {
 		        return Response.status(Response.Status.NOT_FOUND).entity("Board does not exist.").build();
 		    }
-		    // Check if the user is the owner or a collaborator of the board
 		    if (!boardn.getOwner().equals(owner)) {
 		        return Response.status(Response.Status.FORBIDDEN).entity("User does not have access to the specified board.").build();
 		    }
@@ -35,10 +34,8 @@ public class ListController {
 		    list.setOwner(owner); // Set the owner of the list to be the user
 		    list.setListname(listName);
 		    list.setBoard(boardn);
-		    // Persist the list in the database
 		    entityManager.persist(list);
 
-		    // Return a successful response
 		    return Response.status(Response.Status.CREATED).entity("List created successfully.").build();
 		}
 
