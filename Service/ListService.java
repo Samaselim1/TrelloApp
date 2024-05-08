@@ -32,13 +32,12 @@ public class ListService {
     private EntityManager entityManager;
     
     @POST
-    @Path("/create")
+    @Path("/create/{listName}/{boardName}/{user}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createList(User user, Board board, String listName) {
+	 public Response createList(@PathParam("listName")String listName, @PathParam("boardName") String boardName,@PathParam("user") String user) {
         try {
-            Lists createdList = listcontroller.createList(user, board, listName);
-            return Response.status(Response.Status.CREATED).entity(createdList).build();
+            return listcontroller.createList(listName, boardName, user);
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Failed to create list").build();
         }
