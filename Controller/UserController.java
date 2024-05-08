@@ -7,7 +7,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 @Stateless
@@ -26,9 +25,22 @@ public class UserController {
 	}
 	
 	public Response login(User user) {
-	    if (getUserByUsername(user.getUsername()) != null) {
-	        if (user.getPassword().equals(user.getPassword())) {
-	            return Response.ok("User logged in successfully.").build();
+	    User storedUser = getUserByUsername(user.getUsername());
+	    if (storedUser != null) {
+	        if (user.getPassword().equals(storedUser.getPassword())) {
+	            if (user.getUsername().equals(storedUser.getUsername())) {
+	                if (user.getEmail().equals(storedUser.getEmail())) {
+	                    if (user.getRole().equals(storedUser.getRole())) {
+	                        return Response.ok("User logged in successfully.").build();
+	                    } else {
+	                        return Response.status(Response.Status.UNAUTHORIZED).entity("Incorrect role.").build();
+	                    }
+	                } else {
+	                    return Response.status(Response.Status.UNAUTHORIZED).entity("Incorrect email.").build();
+	                }
+	            } else {
+	                return Response.status(Response.Status.UNAUTHORIZED).entity("Incorrect username.").build();
+	            }
 	        } else {
 	            return Response.status(Response.Status.UNAUTHORIZED).entity("Incorrect password.").build();
 	        }
@@ -50,14 +62,20 @@ public class UserController {
 	    
         return Response.status(Response.Status.UNAUTHORIZED).entity("User does not exist.").build();
 	}
-
-	   private User getUserByUsername(String username) {
+	
+	   public User getUserByUsername(String username) {
 		    try {
-		        Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username");
+		        Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class);
 		        query.setParameter("username", username);
-		        return (User) query.getSingleResult();
+		        User user = (User) query.getSingleResult();
+		        System.out.println("User found: " + user.getUsername());
+		        return user;
 		    } catch (NoResultException e) {
-		        return null; 
+		        System.out.println("No user found for username: " + username);
+		        return null;
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		        return null;
 		    }
 		}
 
