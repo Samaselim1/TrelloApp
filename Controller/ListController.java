@@ -39,17 +39,26 @@ public class ListController {
 		    return Response.status(Response.Status.CREATED).entity("List created successfully.").build();
 		}
 
-	 public void deleteList(User user, Lists list) {
-	        if (user.equals(list.getOwner())) {
-	            entityManager.remove(entityManager.merge(list));
-	        } else {
-	            throw new RuntimeException("Only TeamLeader can delete lists.");
-	        }
-	    }
+public Response deleteList(@PathParam("listName") String Listname, @PathParam("user") String user) {
+		    User requestingUser = usercontroller.getUserByUsername(user);
+		    if (requestingUser == null) {
+		        return Response.status(Response.Status.NOT_FOUND).entity("User does not exist.").build();
+		    }
+
+		    Lists list = listcontroller.findListByName(Listname);
+		    if (list == null) {
+		        return Response.status(Response.Status.NOT_FOUND).entity("List does not exist.").build();
+		    }
+
+		    if (!list.getOwner().equals(requestingUser) && !list.getCollaborators().contains(requestingUser)) {
+		        return Response.status(Response.Status.FORBIDDEN).entity("User does not have permission to delete this list.").build();
+		    }
+
+		    entityManager.remove(list);
+		    entityManager.flush();  // Ensure the removal is persisted immediately
+		    return Response.status(Response.Status.OK).entity("List deleted successfully.").build();
+		}
 	    
-	    public List<Lists> getAllLists(Board board) {
-	        Query query = entityManager.createQuery("SELECT l FROM Lists l WHERE l.board = :board");
-	        query.setParameter("board", board);
-	        return query.getResultList();
-	    }
+
+	
 }
