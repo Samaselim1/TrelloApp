@@ -17,12 +17,30 @@ public class ListController {
     @PersistenceContext(unitName = "TrelloPU")
     private EntityManager entityManager;
 	
-	 public Lists createList(User user, Board board, String listName) {
-		 Lists list = new Lists(listName, board, user);
-		 list.setOwner(user);
-		 entityManager.persist(list);
-	        return list;
-	 }
+	public Response createList(@PathParam("listName")String listName, @PathParam("boardName") String boardName,@PathParam("user") String user) {
+			User owner = usercontroller.getUserByUsername(user);
+		 if (owner == null) 
+		 {
+    		 return Response.status(Response.Status.NOT_FOUND).entity("User does not existt.").build();
+    } 
+		    Board boardn = boardcontroller.getBoardByName(boardName);
+		    if (boardn == null) {
+		        return Response.status(Response.Status.NOT_FOUND).entity("Board does not exist.").build();
+		    }
+		    // Check if the user is the owner or a collaborator of the board
+		    if (!boardn.getOwner().equals(owner)) {
+		        return Response.status(Response.Status.FORBIDDEN).entity("User does not have access to the specified board.").build();
+		    }
+		   Lists list = new Lists();
+		    list.setOwner(owner); // Set the owner of the list to be the user
+		    list.setListname(listName);
+		    list.setBoard(boardn);
+		    // Persist the list in the database
+		    entityManager.persist(list);
+
+		    // Return a successful response
+		    return Response.status(Response.Status.CREATED).entity("List created successfully.").build();
+		}
 
 	 public void deleteList(User user, Lists list) {
 	        if (user.equals(list.getOwner())) {
