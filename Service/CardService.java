@@ -21,14 +21,13 @@ public class CardService {
 	    @Inject
 	    private CardController cardcontroller;
 
-	    @POST
-	    @Path("/create")
+	@POST
+	    @Path("/create/{username}/{listName}/{cardDescription}")
 	    @Consumes(MediaType.APPLICATION_JSON)
 	    @Produces(MediaType.APPLICATION_JSON)
-	    public Response createCard(User user, Lists list, String cardDescription) {
-	        Card card = cardcontroller.createCard(user, list, cardDescription);
-	        return Response.ok().entity(card).build();
-	    }
+	    public Response createCard(@PathParam("username")String username,@PathParam("listName") String listName, @PathParam("cardDescription")String cardDescription) {
+	        return cardcontroller.createCard(username, listName, cardDescription);
+	      	    }
 
 	    @PUT
 	    @Path("/move")
