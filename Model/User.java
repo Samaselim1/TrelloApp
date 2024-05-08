@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 
 @Entity
 public class User {
@@ -22,19 +24,20 @@ public class User {
 	 private String email;
 	 private String role;
 	 
+	 @Transient
 	 @ManyToMany(mappedBy = "collaborators")
 	    private List<Board> boards = new ArrayList<>();
 
-	 @OneToMany(mappedBy = "owner")
+	 @Transient
+	 @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
 	    private List<Board> ownedBoards= new ArrayList<>();
 	 
 	 public User( ) {};
 	 public User(String email, String password, String name , String role) {
-	        this.email = email;
+		 	this.email = email;
 	        this.password = password;
 	        this.username = name;
 	        this.role = role;
-
 	    }
 	
 	 public void setId(Long id)
