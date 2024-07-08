@@ -30,24 +30,34 @@ public class Lists {
 	  @JoinColumn(name = "owner_id")
 	  private User owner; 
 
+	 // @Transient
 	  @ManyToMany
 	  @JoinTable(
 	           name = "list_collaborators",
 	           joinColumns = @JoinColumn(name = "list_id"),
 	           inverseJoinColumns = @JoinColumn(name = "user_id")
 	    )
+	  
+	  	
 	    private List<User> collaborators = new ArrayList<>();
 	  
+	  	
+	//  	@Transient
 	    @OneToMany(mappedBy = "list")
-	    private List<Card> cards;
+	    private List<Card> cards = new ArrayList<>();
 
-	    public Lists(String listName, Board board, User owner) {
-	        this.Listname = listName;
-	        this.board = board;
-	        this.owner = owner;
-	        this.cards = new ArrayList<>();
+	    public Lists() {
+	       
 	    }
 
+	    public Long getId() {
+	        return id;
+	    }
+
+	    public void setId(Long id) {
+	        this.id = id;
+	    }
+	    
 		public String getListname() {
 			return Listname;
 		}
@@ -68,16 +78,37 @@ public class Lists {
 			return collaborators;
 		}
 
+		public Board getBoard() {
+			return board;
+		}
+		
+		public void setBoard(Board board)
+		{
+			this.board = board;
+		}
+		
 		public void setCollaborators(List<User> collaborators) {
 			this.collaborators = collaborators;
 		}
 		
-		public void addCard(Card card) {
-	        cards.add(card);
-	    }
-
+		
 	    public void removeCard(Card card) {
 	        cards.remove(card);
 	    }
+	    public  List<Card> getCards()
+	    {
+	    	return cards;
+	    }
 
+	    public void setCards(List<Card> cards)
+	    {
+	    	this.cards = cards;
+	    }
+	    public void addCard(Card card) {
+	        if (!this.cards.contains(card)) {
+	            this.cards.add(card);
+	            card.setList(this); 
+	        }
+	    }
+	
 }
